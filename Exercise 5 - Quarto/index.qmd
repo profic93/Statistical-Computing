@@ -18,6 +18,7 @@ library(ggplot2)
 # Carter Profico Quarto Exercise
 
 ### Problem 1
+
 ```{r}
 #| code-fold: TRUE
 #| warning: FALSE
@@ -26,6 +27,7 @@ reactable(data, defaultPageSize = 5, searchable = T)
 ```
 
 ### Problem 2
+
 ```{r}
 #| code-fold: TRUE
 #| warning: FALSE
@@ -37,7 +39,8 @@ reactable(UCLA_rankings)
 ```
 
 ### Problem 3 & 4
-:::{#fig-UCLA-UCBERK-rankings}
+
+::: {#fig-UCLA-UCBERK-rankings}
 ```{r}
 #| code-fold: TRUE
 #| warning: FALSE
@@ -68,6 +71,7 @@ ggplot(UCBERK_rankings, aes(x = year, y = world_rank)) +
 :::
 
 ### Problem 5
+
 ```{r}
 #| code-fold: TRUE
 #| warning: FALSE
@@ -85,4 +89,3 @@ ggplot(count_us_top_universities_year, aes(x = year, y = num_top_universities)) 
   geom_point(color = "blue", size = 2) +
   labs(title = "Number of Top 50 Ranked American Universities by Year", x = "Year", y = "Number of Universities")
 ```
-
