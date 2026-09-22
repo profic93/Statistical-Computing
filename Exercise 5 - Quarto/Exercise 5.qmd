@@ -1,0 +1,88 @@
+---
+title: "index"
+format: 
+  html:
+    page-layout: full
+editor: visual
+---
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+library(dplyr)
+library(tidyr)
+library(reactable)
+library(ggplot2)
+```
+
+# Carter Profico Quarto Exercise
+
+### Problem 1
+```{r}
+#| code-fold: TRUE
+#| warning: FALSE
+data <- read.csv("http://manctsui.github.io/datasets/timesData.csv")
+reactable(data, defaultPageSize = 5, searchable = T)
+```
+
+### Problem 2
+```{r}
+#| code-fold: TRUE
+#| warning: FALSE
+UCLA_rankings <- data |>
+  filter(grepl("Los Angeles", university_name)) |>
+  arrange(year)
+
+reactable(UCLA_rankings)
+```
+
+### Problem 3 & 4
+:::{#fig-UCLA-UCBERK-rankings}
+```{r}
+#| code-fold: TRUE
+#| warning: FALSE
+#| layout-ncol: 2
+
+UCLA_rankings$world_rank <- as.numeric(UCLA_rankings$world_rank)
+
+ggplot(UCLA_rankings, aes(x = year, y = world_rank)) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue", size = 2) +
+  labs(title = "UCLA World Rank by Year", x = "Year", y = "World Rank") +
+  coord_cartesian(ylim = c(7, 16)) +
+  scale_y_reverse()
+
+UCBERK_rankings <- data |>
+  filter(grepl("Berkeley", university_name)) |>
+  arrange(year)
+
+UCBERK_rankings$world_rank <- as.numeric(UCBERK_rankings$world_rank)
+
+ggplot(UCBERK_rankings, aes(x = year, y = world_rank)) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue", size = 2) +
+  labs(title = "UC Berkeley World Rank by Year", x = "Year", y = "World Rank") +
+  coord_cartesian(ylim = c(7, 16)) +
+  scale_y_reverse()
+```
+:::
+
+### Problem 5
+```{r}
+#| code-fold: TRUE
+#| warning: FALSE
+
+top_50_universities <- data |>
+  filter(world_rank >= 50)
+
+count_us_top_universities_year <- top_50_universities |>
+  group_by(country, year) |>
+  summarise(num_top_universities = n_distinct(university_name), .groups = "drop") |>
+  filter(grepl("United States of America", country))
+
+ggplot(count_us_top_universities_year, aes(x = year, y = num_top_universities)) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue", size = 2) +
+  labs(title = "Number of Top 50 Ranked American Universities by Year", x = "Year", y = "Number of Universities")
+```
+
