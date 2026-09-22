@@ -1,5 +1,5 @@
 ---
-title: "index"
+title: "Exercise 5"
 format: 
   html:
     page-layout: full
@@ -14,8 +14,6 @@ library(tidyr)
 library(reactable)
 library(ggplot2)
 ```
-
-# Carter Profico Quarto Exercise
 
 ### Problem 1
 
