@@ -2,11 +2,11 @@ project:
   type: website
 
 website:
-  title: "My Quarto Website"
+  title: "Statistical Computing Exercises"
   navbar:
     left:
-      - href: index.qmd
-        text: Home
+      - href: Exercise_5.qmd
+        text: Exercise_5
 
 format:
   html:
