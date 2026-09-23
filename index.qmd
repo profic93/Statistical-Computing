@@ -1,0 +1,9 @@
+---
+title: "Statistical Computing Exercises"
+---
+
+Welcome to my statistical computing exercises.
+
+## Exercises
+
+- [Exercise 5](exercises/exercise-5.qmd)

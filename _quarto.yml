@@ -5,11 +5,12 @@ website:
   title: "Statistical Computing Exercises"
   navbar:
     left:
-      - href: Exercise_5.qmd
-        text: Exercise_5
+      - href: index.qmd
+        text: Home
+      - href: exercises/exercise-5.qmd
+        text: Exercise 5
 
 format:
   html:
     theme: cosmo
-    css: styles.css
     toc: true
