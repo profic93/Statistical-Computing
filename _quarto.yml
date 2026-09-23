@@ -7,8 +7,16 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: exercises/exercise-5.qmd
-        text: Exercise 5
+
+      - text: Lessons
+        menu:
+          - href: lessons/lesson-6-visualization.qmd
+            text: Visualization
+
+      - text: Exercises
+        menu:
+          - href: exercises/exercise-5.qmd
+            text: Exercise 5
 
 format:
   html:
