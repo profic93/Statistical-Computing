@@ -1,5 +1,54 @@
 [
   {
+    "objectID": "lessons/lesson-6-visualization.html",
+    "href": "lessons/lesson-6-visualization.html",
+    "title": "ggplot2",
+    "section": "",
+    "text": "First load in some libraries.\nlibrary(dplyr)\nlibrary(tidyr)\nlibrary(ggplot2)\nlibrary(reactable)\nlibrary(plotly)\nlibrary(crosstalk)\nDo install.packages(\"crosstalk\") and similarly for other packages you may not have."
+  },
+  {
+    "objectID": "lessons/lesson-6-visualization.html#example",
+    "href": "lessons/lesson-6-visualization.html#example",
+    "title": "ggplot2",
+    "section": "Example",
+    "text": "Example\nUse the Billboard Songs database and the top positions of their songs, available at https://manctsui.github.io/datasets/charts.csv.\nPlot the number of weeks song is on the board vs their peak positions.\n(Idea: Keep only distinct songs.)\n\ndf &lt;- read.csv(\"https://manctsui.github.io/datasets/charts.csv\")"
+  },
+  {
+    "objectID": "lessons/lesson-6-visualization.html#example-1",
+    "href": "lessons/lesson-6-visualization.html#example-1",
+    "title": "ggplot2",
+    "section": "Example",
+    "text": "Example\nUse the Billboard Songs database and the top positions of their songs, available at https://manctsui.github.io/datasets/charts.csv.\nPlot the number of weeks song is on the board vs their peak positions.\n(Idea: Keep only distinct songs.)\n\nplot2 &lt;- plot_ly(df, x = ~weeks.on.board, y = ~peak.rank, type = \"scatter\", mode = \"markers\")\n\nplot2"
+  },
+  {
+    "objectID": "lessons/lesson-6-visualization.html#example-2",
+    "href": "lessons/lesson-6-visualization.html#example-2",
+    "title": "ggplot2",
+    "section": "Example",
+    "text": "Example\nWe display a few specific artists from the Billboard Songs database and the top positions of their songs.\n\nspecific_artists &lt;- df |&gt;\n  filter(artist %in% c(\"Ed Sheeran\", \"Adele\", \"Taylor Swift\")) |&gt;\n  distinct(song, artist, peak.rank)\n\nsd &lt;- SharedData$new(specific_artists, key = ~song)\n\nfilter_checkbox(\"artist_checkbox\", \"Artist\", sd, ~artist)\n\n\nArtist\n\n\n\n\nAdele\n\n\n\n\n\nEd Sheeran\n\n\n\n\n\nTaylor Swift\n\n\n\n\n\n\nreactable(sd)"
+  },
+  {
+    "objectID": "lessons/lesson-6-visualization.html#caveats",
+    "href": "lessons/lesson-6-visualization.html#caveats",
+    "title": "ggplot2",
+    "section": "Caveats",
+    "text": "Caveats\n\nNot all HTML widgets support crosstalk.\nFor full reactivity, use Shiny for R."
+  },
+  {
+    "objectID": "lessons/lesson-6-visualization.html#reference",
+    "href": "lessons/lesson-6-visualization.html#reference",
+    "title": "ggplot2",
+    "section": "Reference",
+    "text": "Reference\n\nDocumentation for crosstalk esp. filter_slider, filter_select, and filter_checkbox (under filter_slider).\nTutorial\nExamples"
+  },
+  {
+    "objectID": "exercises/exercise-5.html",
+    "href": "exercises/exercise-5.html",
+    "title": "Exercise 5",
+    "section": "",
+    "text": "Problem 1\n\n\nCode\ndata &lt;- read.csv(\"http://manctsui.github.io/datasets/timesData.csv\")\nreactable(data, defaultPageSize = 5, searchable = T)\n\n\n\n\n\n\n\n\nProblem 2\n\n\nCode\nUCLA_rankings &lt;- data |&gt;\n  filter(grepl(\"Los Angeles\", university_name)) |&gt;\n  arrange(year)\n\nreactable(UCLA_rankings)\n\n\n\n\n\n\n\n\nProblem 3 & 4\n\nCode\nUCLA_rankings$world_rank &lt;- as.numeric(UCLA_rankings$world_rank)\n\nggplot(UCLA_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UCLA World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\nUCBERK_rankings &lt;- data |&gt;\n  filter(grepl(\"Berkeley\", university_name)) |&gt;\n  arrange(year)\n\nUCBERK_rankings$world_rank &lt;- as.numeric(UCBERK_rankings$world_rank)\n\nggplot(UCBERK_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UC Berkeley World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1\n\n\n\n\n\nProblem 5\n\n\nCode\ntop_50_universities &lt;- data |&gt;\n  filter(world_rank &gt;= 50)\n\ncount_us_top_universities_year &lt;- top_50_universities |&gt;\n  group_by(country, year) |&gt;\n  summarise(num_top_universities = n_distinct(university_name), .groups = \"drop\") |&gt;\n  filter(grepl(\"United States of America\", country))\n\nggplot(count_us_top_universities_year, aes(x = year, y = num_top_universities)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"Number of Top 50 Ranked American Universities by Year\", x = \"Year\", y = \"Number of Universities\")"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Statistical Computing Exercises",
@@ -12,12 +61,5 @@
     "title": "Statistical Computing Exercises",
     "section": "Exercises",
     "text": "Exercises\n\nExercise 5"
-  },
-  {
-    "objectID": "exercises/exercise-5.html",
-    "href": "exercises/exercise-5.html",
-    "title": "Exercise 5",
-    "section": "",
-    "text": "Problem 1\n\n\nCode\ndata &lt;- read.csv(\"http://manctsui.github.io/datasets/timesData.csv\")\nreactable(data, defaultPageSize = 5, searchable = T)\n\n\n\n\n\n\n\n\nProblem 2\n\n\nCode\nUCLA_rankings &lt;- data |&gt;\n  filter(grepl(\"Los Angeles\", university_name)) |&gt;\n  arrange(year)\n\nreactable(UCLA_rankings)\n\n\n\n\n\n\n\n\nProblem 3 & 4\n\nCode\nUCLA_rankings$world_rank &lt;- as.numeric(UCLA_rankings$world_rank)\n\nggplot(UCLA_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UCLA World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\nUCBERK_rankings &lt;- data |&gt;\n  filter(grepl(\"Berkeley\", university_name)) |&gt;\n  arrange(year)\n\nUCBERK_rankings$world_rank &lt;- as.numeric(UCBERK_rankings$world_rank)\n\nggplot(UCBERK_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UC Berkeley World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1\n\n\n\n\n\nProblem 5\n\n\nCode\ntop_50_universities &lt;- data |&gt;\n  filter(world_rank &gt;= 50)\n\ncount_us_top_universities_year &lt;- top_50_universities |&gt;\n  group_by(country, year) |&gt;\n  summarise(num_top_universities = n_distinct(university_name), .groups = \"drop\") |&gt;\n  filter(grepl(\"United States of America\", country))\n\nggplot(count_us_top_universities_year, aes(x = year, y = num_top_universities)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"Number of Top 50 Ranked American Universities by Year\", x = \"Year\", y = \"Number of Universities\")"
   }
 ]
