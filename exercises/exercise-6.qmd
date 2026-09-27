@@ -1,0 +1,125 @@
+---
+title: "Exercise 6"
+format: 
+  html:
+    page-layout: full
+editor: visual
+---
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+library(dplyr)
+library(scales)
+library(tidyr)
+library(readr)
+library(reactable)
+library(ggplot2)
+library(plotly)
+library(crosstalk)
+```
+
+```{r}
+#| warning: FALSE
+
+data <- read.csv("https://manctsui.github.io/datasets/timesData.csv")
+reactable(data, searchable = T, defaultPageSize = 5)
+```
+
+### Problem 1A
+```{r}
+#| warning: FALSE
+
+num_universities_by_country <- data |>
+  group_by(country) |>
+  summarise(num_universities = n_distinct(university_name)) |>
+  arrange(desc(num_universities)) |>
+  head(3)
+
+reactable(num_universities_by_country)
+```
+
+### Problem 1B
+```{r}
+#| warning: FALSE
+
+ggplot(num_universities_by_country, aes(x=country, y=num_universities)) +
+  geom_bar(stat = "identity")
+```
+
+### Problem 2A
+```{r}
+#| warning: FALSE
+
+top_50_unis_2011 <- data |>
+  filter(year == 2011, as.numeric(world_rank) <= 50) |>
+  select(world_rank, university_name) |>
+  arrange(as.numeric(world_rank))
+
+reactable(top_50_unis_2011, searchable = T, defaultPageSize = 5)
+```
+
+### Problem 2B
+When turning data into a `SharedData` object we want a key that is unique to each row of data. If this is talking about Problem 1A, using something like `rank` as a key is irrelevant, there is not regard to the ranking in the data set from problem 1A. However, if this is about problem 2A, then it is still not a great choice. `world_rank` has the possibility of being shared between two universities even in the same year, for example both the University of California, Irvine, and University of Science and Technology of China both share the `world_rank` of 49. There are 4 universities that share the `world_rank` of 43. `world_rank` does not function well as a unique identifier, but `university_name` would, and is a much better choice for the key.
+
+### Problem 2C
+```{r}
+#| warning: FALSE
+
+sd_top_50_2011 <- SharedData$new(top_50_unis_2011, key = ~university_name)
+
+filter_slider("rank_slider", "Rank", sd_top_50_2011, column = ~as.numeric(world_rank))
+reactable(sd_top_50_2011, searchable = T, defaultPageSize = 5)
+```
+
+### Problem 3
+```{r}
+#| warning: FALSE
+
+data_2016 <- data |>
+  filter(year == 2016) |>
+  mutate(num_students = parse_number(num_students))
+
+sd_2016 <- SharedData$new(data_2016, key = ~university_name)
+
+plot_ly(
+  sd_2016,
+  x = ~student_staff_ratio,
+  y = ~num_students,
+  type = "scatter",
+  mode = "markers"
+) %>%
+  layout(
+    title = "Number of Students by Student Staff Ratio",
+    xaxis = list(
+      title = "Student Staff Ratio",
+      nticks = 8
+    ),
+    yaxis = list(
+      title = "Number of Students",
+      tickformat = ",",
+      nticks = 8
+    )
+  )
+
+plot_ly(
+  sd_2016,
+  x = ~student_staff_ratio,
+  y = ~teaching,
+  type = "scatter",
+  mode = "markers"
+) %>%
+  layout(
+    title = "Teaching Score by Student Staff Ratio",
+    xaxis = list(
+      title = "Student Staff Ratio",
+      nticks = 8
+    ),
+    yaxis = list(
+      title = "Teaching Score",
+      tickformat = ",",
+      nticks = 8
+    )
+  )
+
+```

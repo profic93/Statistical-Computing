@@ -75,7 +75,7 @@ ggplot(UCBERK_rankings, aes(x = year, y = world_rank)) +
 #| warning: FALSE
 
 top_50_universities <- data |>
-  filter(world_rank >= 50)
+  filter(world_rank <= 50)
 
 count_us_top_universities_year <- top_50_universities |>
   group_by(country, year) |>
