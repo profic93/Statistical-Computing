@@ -42,24 +42,38 @@
     "text": "Reference\n\nDocumentation for crosstalk esp. filter_slider, filter_select, and filter_checkbox (under filter_slider).\nTutorial\nExamples"
   },
   {
+    "objectID": "exercises/exercise-6.html",
+    "href": "exercises/exercise-6.html",
+    "title": "Exercise 6",
+    "section": "",
+    "text": "data &lt;- read.csv(\"https://manctsui.github.io/datasets/timesData.csv\")\nreactable(data, searchable = T, defaultPageSize = 5)\n\n\n\n\n\n\nProblem 1A\n\nnum_universities_by_country &lt;- data |&gt;\n  group_by(country) |&gt;\n  summarise(num_universities = n_distinct(university_name)) |&gt;\n  arrange(desc(num_universities)) |&gt;\n  head(3)\n\nreactable(num_universities_by_country)\n\n\n\n\n\n\n\nProblem 1B\n\nggplot(num_universities_by_country, aes(x=country, y=num_universities)) +\n  geom_bar(stat = \"identity\")\n\n\n\n\n\n\n\n\n\n\nProblem 2A\n\ntop_50_unis_2011 &lt;- data |&gt;\n  filter(year == 2011, as.numeric(world_rank) &lt;= 50) |&gt;\n  select(world_rank, university_name) |&gt;\n  arrange(as.numeric(world_rank))\n\nreactable(top_50_unis_2011, searchable = T, defaultPageSize = 5)\n\n\n\n\n\n\n\nProblem 2B\nWhen turning data into a SharedData object we want a key that is unique to each row of data. If this is talking about Problem 1A, using something like rank as a key is irrelevant, there is not regard to the ranking in the data set from problem 1A. However, if this is about problem 2A, then it is still not a great choice. world_rank has the possibility of being shared between two universities even in the same year, for example both the University of California, Irvine, and University of Science and Technology of China both share the world_rank of 49. There are 4 universities that share the world_rank of 43. world_rank does not function well as a unique identifier, but university_name would, and is a much better choice for the key.\n\n\nProblem 2C\n\nsd_top_50_2011 &lt;- SharedData$new(top_50_unis_2011, key = ~university_name)\n\nfilter_slider(\"rank_slider\", \"Rank\", sd_top_50_2011, column = ~as.numeric(world_rank))\n\n\nRank\n\n\n\n\nreactable(sd_top_50_2011, searchable = T, defaultPageSize = 5)\n\n\n\n\n\n\n\nProblem 3\n\ndata_2016 &lt;- data |&gt;\n  filter(year == 2016) |&gt;\n  mutate(num_students = parse_number(num_students))\n\nsd_2016 &lt;- SharedData$new(data_2016, key = ~university_name)\n\nplot_ly(\n  sd_2016,\n  x = ~student_staff_ratio,\n  y = ~num_students,\n  type = \"scatter\",\n  mode = \"markers\"\n) %&gt;%\n  layout(\n    title = \"Number of Students by Student Staff Ratio\",\n    xaxis = list(\n      title = \"Student Staff Ratio\",\n      nticks = 8\n    ),\n    yaxis = list(\n      title = \"Number of Students\",\n      tickformat = \",\",\n      nticks = 8\n    )\n  )\n\n\n\n\nplot_ly(\n  sd_2016,\n  x = ~student_staff_ratio,\n  y = ~teaching,\n  type = \"scatter\",\n  mode = \"markers\"\n) %&gt;%\n  layout(\n    title = \"Teaching Score by Student Staff Ratio\",\n    xaxis = list(\n      title = \"Student Staff Ratio\",\n      nticks = 8\n    ),\n    yaxis = list(\n      title = \"Teaching Score\",\n      tickformat = \",\",\n      nticks = 8\n    )\n  )"
+  },
+  {
     "objectID": "exercises/exercise-5.html",
     "href": "exercises/exercise-5.html",
     "title": "Exercise 5",
     "section": "",
-    "text": "Problem 1\n\n\nCode\ndata &lt;- read.csv(\"http://manctsui.github.io/datasets/timesData.csv\")\nreactable(data, defaultPageSize = 5, searchable = T)\n\n\n\n\n\n\n\n\nProblem 2\n\n\nCode\nUCLA_rankings &lt;- data |&gt;\n  filter(grepl(\"Los Angeles\", university_name)) |&gt;\n  arrange(year)\n\nreactable(UCLA_rankings)\n\n\n\n\n\n\n\n\nProblem 3 & 4\n\nCode\nUCLA_rankings$world_rank &lt;- as.numeric(UCLA_rankings$world_rank)\n\nggplot(UCLA_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UCLA World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\nUCBERK_rankings &lt;- data |&gt;\n  filter(grepl(\"Berkeley\", university_name)) |&gt;\n  arrange(year)\n\nUCBERK_rankings$world_rank &lt;- as.numeric(UCBERK_rankings$world_rank)\n\nggplot(UCBERK_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UC Berkeley World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1\n\n\n\n\n\nProblem 5\n\n\nCode\ntop_50_universities &lt;- data |&gt;\n  filter(world_rank &gt;= 50)\n\ncount_us_top_universities_year &lt;- top_50_universities |&gt;\n  group_by(country, year) |&gt;\n  summarise(num_top_universities = n_distinct(university_name), .groups = \"drop\") |&gt;\n  filter(grepl(\"United States of America\", country))\n\nggplot(count_us_top_universities_year, aes(x = year, y = num_top_universities)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"Number of Top 50 Ranked American Universities by Year\", x = \"Year\", y = \"Number of Universities\")"
+    "text": "Problem 1\n\n\nCode\ndata &lt;- read.csv(\"http://manctsui.github.io/datasets/timesData.csv\")\nreactable(data, defaultPageSize = 5, searchable = T)\n\n\n\n\n\n\n\n\nProblem 2\n\n\nCode\nUCLA_rankings &lt;- data |&gt;\n  filter(grepl(\"Los Angeles\", university_name)) |&gt;\n  arrange(year)\n\nreactable(UCLA_rankings)\n\n\n\n\n\n\n\n\nProblem 3 & 4\n\nCode\nUCLA_rankings$world_rank &lt;- as.numeric(UCLA_rankings$world_rank)\n\nggplot(UCLA_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UCLA World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\nUCBERK_rankings &lt;- data |&gt;\n  filter(grepl(\"Berkeley\", university_name)) |&gt;\n  arrange(year)\n\nUCBERK_rankings$world_rank &lt;- as.numeric(UCBERK_rankings$world_rank)\n\nggplot(UCBERK_rankings, aes(x = year, y = world_rank)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"UC Berkeley World Rank by Year\", x = \"Year\", y = \"World Rank\") +\n  coord_cartesian(ylim = c(7, 16)) +\n  scale_y_reverse()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1\n\n\n\n\n\nProblem 5\n\n\nCode\ntop_50_universities &lt;- data |&gt;\n  filter(world_rank &lt;= 50)\n\ncount_us_top_universities_year &lt;- top_50_universities |&gt;\n  group_by(country, year) |&gt;\n  summarise(num_top_universities = n_distinct(university_name), .groups = \"drop\") |&gt;\n  filter(grepl(\"United States of America\", country))\n\nggplot(count_us_top_universities_year, aes(x = year, y = num_top_universities)) +\n  geom_line(color = \"blue\") +\n  geom_point(color = \"blue\", size = 2) +\n  labs(title = \"Number of Top 50 Ranked American Universities by Year\", x = \"Year\", y = \"Number of Universities\")"
   },
   {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Statistical Computing Exercises",
     "section": "",
-    "text": "Welcome to my statistical computing exercises."
+    "text": "Welcome to my statistical computing exercises.\nMost recent exercise: Exercise 6"
   },
   {
     "objectID": "index.html#exercises",
     "href": "index.html#exercises",
     "title": "Statistical Computing Exercises",
     "section": "Exercises",
-    "text": "Exercises\n\nExercise 5"
+    "text": "Exercises\n\nExercise 5\nExercise 6"
+  },
+  {
+    "objectID": "index.html#lessons",
+    "href": "index.html#lessons",
+    "title": "Statistical Computing Exercises",
+    "section": "Lessons",
+    "text": "Lessons\n\nLesson 6 - Visualization"
   }
 ]
