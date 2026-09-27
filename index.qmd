@@ -7,3 +7,8 @@ Welcome to my statistical computing exercises.
 ## Exercises
 
 - [Exercise 5](exercises/exercise-5.qmd)
+- [Exercise 6](exercises/exercise-6.qmd)
+
+## Lessons
+
+- [Lesson 6 - Visualization](lessons/lesson-6-visualization.qmd)
