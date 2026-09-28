@@ -1,0 +1,44 @@
+---
+title: "Exercise 6"
+format: 
+  html:
+    page-layout: full
+editor: visual
+---
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+library(dplyr)
+library(scales)
+library(tidyr)
+library(readr)
+library(reactable)
+library(ggplot2)
+library(plotly)
+library(crosstalk)
+```
+
+```{r}
+df <- data.frame(
+x = c(5, 1, 4, NA, NA, NA, 2, 1),
+y = c(5, NA, 3, 2, 5, NA, 2, 1),
+z = c(1, 4, 2, 5, 2, NA, 5, 4),
+t = c(4, 2, NA, 1, 5, 2, 3, 3)
+)
+
+r_yx <- cor(df$y, df$x, use = "pairwise.complete.obs")
+r_yz <- cor(df$y, df$z, use = "pairwise.complete.obs")
+r_yt <- cor(df$y, df$t, use = "pairwise.complete.obs")
+
+r_yx
+r_yz
+r_yt
+```
+I will only be using User 4 since there is a positive correlation between User 4 and User 2, and User 4 is the only user with a rating for movie 6.
+
+```{r}
+y_movie6_pref <- (r_yt/r_yt) * (2 - mean(df$t, na.rm = TRUE)) + mean(df$y, na.rm = TRUE)
+y_movie6_pref
+
+```

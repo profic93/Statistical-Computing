@@ -27,6 +27,7 @@ reactable(data, searchable = T, defaultPageSize = 5)
 ```
 
 ### Problem 1A
+
 ```{r}
 #| warning: FALSE
 
@@ -40,6 +41,7 @@ reactable(num_universities_by_country)
 ```
 
 ### Problem 1B
+
 ```{r}
 #| warning: FALSE
 
@@ -48,6 +50,7 @@ ggplot(num_universities_by_country, aes(x=country, y=num_universities)) +
 ```
 
 ### Problem 2A
+
 ```{r}
 #| warning: FALSE
 
@@ -60,9 +63,11 @@ reactable(top_50_unis_2011, searchable = T, defaultPageSize = 5)
 ```
 
 ### Problem 2B
+
 When turning data into a `SharedData` object we want a key that is unique to each row of data. If this is talking about Problem 1A, using something like `rank` as a key is irrelevant, there is not regard to the ranking in the data set from problem 1A. However, if this is about problem 2A, then it is still not a great choice. `world_rank` has the possibility of being shared between two universities even in the same year, for example both the University of California, Irvine, and University of Science and Technology of China both share the `world_rank` of 49. There are 4 universities that share the `world_rank` of 43. `world_rank` does not function well as a unique identifier, but `university_name` would, and is a much better choice for the key.
 
 ### Problem 2C
+
 ```{r}
 #| warning: FALSE
 
@@ -73,6 +78,7 @@ reactable(sd_top_50_2011, searchable = T, defaultPageSize = 5)
 ```
 
 ### Problem 3
+
 ```{r}
 #| warning: FALSE
 
