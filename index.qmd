@@ -4,10 +4,13 @@ title: "Statistical Computing Exercises"
 
 Welcome to my statistical computing exercises.
 
+Most recent exercise: Exercise 7
+
 ## Exercises
 
 - [Exercise 5](exercises/exercise-5.qmd)
 - [Exercise 6](exercises/exercise-6.qmd)
+- [Exercise 7](exercises/exercise-7.qmd)
 
 ## Lessons
 

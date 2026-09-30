@@ -1,5 +1,5 @@
 ---
-title: "Exercise 6"
+title: "Exercise 7"
 format: 
   html:
     page-layout: full
@@ -10,14 +10,11 @@ editor: visual
 #| echo: FALSE
 #| warning: FALSE
 library(dplyr)
-library(scales)
 library(tidyr)
-library(readr)
 library(reactable)
-library(ggplot2)
-library(plotly)
-library(crosstalk)
 ```
+
+### Problem 1
 
 ```{r}
 df <- data.frame(
@@ -35,6 +32,7 @@ r_yx
 r_yz
 r_yt
 ```
+
 I will only be using User 4 since there is a positive correlation between User 4 and User 2, and User 4 is the only user with a rating for movie 6.
 
 ```{r}
@@ -42,3 +40,104 @@ y_movie6_pref <- (r_yt/r_yt) * (2 - mean(df$t, na.rm = TRUE)) + mean(df$y, na.rm
 y_movie6_pref
 
 ```
+
+### Problem 2
+
+```{r}
+movies <- as.data.frame(t(df))
+
+for (i in 2:ncol(movies)) {
+  correlation <- cor(
+    as.numeric(movies[, 1]),
+    as.numeric(movies[, i]),
+    use = "pairwise.complete.obs"
+  )
+  
+  print(paste("Movie", i, ":", correlation))
+}
+```
+
+The movie most similar to Movie 1 is Movie 5 since it has the highest Pearson correlation value when comparing all movies.
+
+### Problem 3A
+
+```{r}
+countries <- read.csv("https://manctsui.github.io/datasets/countries.csv")
+
+reactable(countries, searchable = TRUE, defaultPageSize = 5)
+
+countries_clean <- countries |>
+  group_by(Region) |>
+  mutate(
+    Agriculture = ifelse(is.na(Agriculture), mean(Agriculture, na.rm = TRUE), Agriculture),
+    Industry = ifelse(is.na(Industry), mean(Industry, na.rm = TRUE), Industry)
+  ) |>
+  ungroup()
+
+reactable(countries_clean, searchable = TRUE, defaultPageSize = 5)
+```
+
+### Problem 3B
+
+```{r}
+print(paste("Count of NAs in Agriculture: ", sum(is.na(countries$Agriculture))))
+
+print(paste("Count of NAs in Industry: ", sum(is.na(countries$Industry))))
+```
+
+### Problem 4
+
+```{r}
+df <- data.frame(
+temp = c(79, 74, 73, 76, 82, 72, 71, 79, 83, 70, 73, 75, 77),
+chirps = c(44, 40, 38, 43, 48, 37, 34, 45, 51, 32, 35, 42, 43)
+)
+
+lm(temp ~ chirps, data = df)
+
+print(paste("Correlation: ", cor(df$temp, df$chirps)))
+print(paste("Mean temp: ", mean(df$temp)))
+print(paste("Standard deviation temp: ", sd(df$temp)))
+print(paste("Mean chirps: ", mean(df$chirps)))
+print(paste("Standard deviation chirps: ", sd(df$chirps)))
+```
+
+The slope of a linear regression can be calculated using the correlation and standard deviations:
+
+$$
+b_1 = r\frac{s_y}{s_x}
+$$
+
+Using the values calculated from the data:
+
+$$
+b_1 = (0.970876)\left(\frac{4.110649}{5.589597}\right)
+$$
+
+$$
+b_1 \approx 0.714
+$$
+
+Next, the intercept can be calculated using the means:
+
+$$
+b_0 = \bar{y} - b_1\bar{x}
+$$
+
+Substituting the values for temperature and chirps:
+
+$$
+b_0 = 75.692308 - (0.714)(40.923077)
+$$
+
+$$
+b_0 \approx 46.474
+$$
+
+Therefore, the regression equation is:
+
+$$
+\widehat{temp} = 46.474 + 0.714(chirps)
+$$
+
+This is the same line of best fit produced by `lm(temp ~ chirps, data = df)`. Therefore, the correlation, means, and standard deviations contain the information needed to calculate the slope and intercept of the linear regression line.
