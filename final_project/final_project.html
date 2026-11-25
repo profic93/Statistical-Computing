@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Color, Splash, and Cards: What Predicts Winning in Magic: The Gathering Draft? – Statistical Computing Exercises</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-172ba59bd5e0b52282274ba0c0cc16fc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Statistical Computing Exercises</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lessons" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Lessons</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-lessons">    
+        <li>
+    <a class="dropdown-item" href="../lessons/lesson-6-visualization.html">
+ <span class="dropdown-text">Visualization</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exercises">    
+        <li>
+    <a class="dropdown-item" href="../exercises/exercise-5.html">
+ <span class="dropdown-text">Exercise 5</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../exercises/exercise-6.html">
+ <span class="dropdown-text">Exercise 6</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../exercises/exercise-7.html">
+ <span class="dropdown-text">Exercise 7</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="../final_project/final_project.html" aria-current="page"> 
+<span class="menu-text">Final Project</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#question" id="toc-question" class="nav-link active" data-scroll-target="#question">Question</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#exploring-the-data" id="toc-exploring-the-data" class="nav-link" data-scroll-target="#exploring-the-data">Exploring the data</a></li>
+  <li><a href="#headline-findings" id="toc-headline-findings" class="nav-link" data-scroll-target="#headline-findings">Headline findings</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#data-and-querying" id="toc-data-and-querying" class="nav-link" data-scroll-target="#data-and-querying">Data and querying</a></li>
+  <li><a href="#variables-and-filtering" id="toc-variables-and-filtering" class="nav-link" data-scroll-target="#variables-and-filtering">Variables and filtering</a></li>
+  <li><a href="#resampling-by-draft" id="toc-resampling-by-draft" class="nav-link" data-scroll-target="#resampling-by-draft">Resampling by draft</a></li>
+  <li><a href="#adjusting-for-player-skill" id="toc-adjusting-for-player-skill" class="nav-link" data-scroll-target="#adjusting-for-player-skill">Adjusting for player skill</a></li>
+  <li><a href="#splash" id="toc-splash" class="nav-link" data-scroll-target="#splash">Splash</a></li>
+  <li><a href="#individual-cards" id="toc-individual-cards" class="nav-link" data-scroll-target="#individual-cards">Individual cards</a></li>
+  <li><a href="#color-versus-cards-out-of-sample-comparison" id="toc-color-versus-cards-out-of-sample-comparison" class="nav-link" data-scroll-target="#color-versus-cards-out-of-sample-comparison">Color versus cards: out-of-sample comparison</a></li>
+  <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
+  <ul class="collapse">
+  <li><a href="#which-color-pair-wins" id="toc-which-color-pair-wins" class="nav-link" data-scroll-target="#which-color-pair-wins">Which color pair wins?</a></li>
+  <li><a href="#does-skill-explain-the-color-differences" id="toc-does-skill-explain-the-color-differences" class="nav-link" data-scroll-target="#does-skill-explain-the-color-differences">Does skill explain the color differences?</a></li>
+  <li><a href="#splash-colors" id="toc-splash-colors" class="nav-link" data-scroll-target="#splash-colors">Splash colors</a></li>
+  <li><a href="#card-effects" id="toc-card-effects" class="nav-link" data-scroll-target="#card-effects">Card effects</a></li>
+  <li><a href="#color-versus-cards" id="toc-color-versus-cards" class="nav-link" data-scroll-target="#color-versus-cards">Color versus cards</a></li>
+  </ul></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a>
+  <ul class="collapse">
+  <li><a href="#what-the-results-say" id="toc-what-the-results-say" class="nav-link" data-scroll-target="#what-the-results-say">What the results say</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#possible-extensions" id="toc-possible-extensions" class="nav-link" data-scroll-target="#possible-extensions">Possible extensions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Color, Splash, and Cards: What Predicts Winning in Magic: The Gathering Draft?</h1>
+<p class="subtitle lead">STAT 02511 Final Project: Reality Fracture (FRA) Premier Draft</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="question" class="level2">
+<h2 class="anchored" data-anchor-id="question">Question</h2>
+<p>In Magic: The Gathering draft, players build a deck from cards they pick during the draft. Two choices shape most decks: which two colors to play, and whether to “splash” a third color for a few extra cards. This project asks:</p>
+<ol type="1">
+<li>Which color pairs, and which splash colors, are associated with the highest win rates, and does the “best” choice hold up beyond random noise and differences in player skill?</li>
+<li>Do individual cards skew win rate, or is winning mostly a color-based effect?</li>
+</ol>
+</section>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>The data are the public <a href="https://www.17lands.com/public_datasets">17Lands</a> game-level records for Premier Draft in Reality Fracture (FRA). The file has one row per game, with the outcome, the deck’s colors, player and opponent skill indicators, and counts of every card in the deck, in the opening hand, and drawn.</p>
+<p>After restricting to two-color decks, the analysis uses 327,430 games (76% of the 431,627 in the file) from 61,150 drafts. All 10 two-color pairs are included.</p>
+<p>Colors are abbreviated W (white), U (blue), B (black), R (red), and G (green), so WU is white-blue.</p>
+</section>
+<section id="exploring-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="exploring-the-data">Exploring the data</h2>
+<p>Before any modeling, a few queries show what the data look like. The file is queried in place with DuckDB, using <code>dplyr</code> verbs that <code>dbplyr</code> translates to SQL.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>games <span class="sc">|&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">nchar</span>(main_colors) <span class="sc">==</span> <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(main_colors) <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">games  =</span> <span class="fu">n</span>(),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">drafts =</span> <span class="fu">n_distinct</span>(draft_id),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">wr     =</span> <span class="fu">mean</span>(<span class="fu">as.integer</span>(won), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(wr)) <span class="sc">|&gt;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Calling <code>show_query()</code> on a simpler version of this pipeline prints the SQL that actually runs:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> main_colors, <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> n</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> games_keyed</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> (<span class="fu">LENGTH</span>(main_colors) <span class="op">=</span> <span class="fl">2.0</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> main_colors</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The first thing the queries show is that deck color is not evenly distributed. UB is the most played pair, with 18.7% of two-color games, while WR is the least played, with 4.7%. <a href="#fig-popularity" class="quarto-xref">Figure&nbsp;1</a> asks whether the pairs players choose most are also the ones that win most.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> pairs_raw <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">share =</span> games <span class="sc">/</span> <span class="fu">sum</span>(games))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>avg_wr <span class="ot">&lt;-</span> <span class="fu">weighted.mean</span>(pop<span class="sc">$</span>wr, pop<span class="sc">$</span>games)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pop, <span class="fu">aes</span>(<span class="at">x =</span> share, <span class="at">y =</span> wr, <span class="at">label =</span> main_colors)) <span class="sc">+</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> avg_wr, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Share of two-color games"</span>, <span class="at">y =</span> <span class="st">"Raw win rate"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-popularity" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-popularity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="final_project_files/figure-html/fig-popularity-1.png" class="img-fluid figure-img" width="624">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-popularity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: How often each color pair is played versus its raw win rate. The dashed line is the average win rate across two-color games.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The correlation between a pair’s popularity and its win rate is 0.86 across the 10 pairs, so popularity alone does not tell you which colors are best. Two other facts stand out before any modeling: the average player here wins 55.1% of games, so this is a stronger-than-average group, and being on the play wins 57.8% of games versus 52.9% on the draw. That is already a larger gap than between most color pairs, which is why every later model controls for it.</p>
+<p>The rest of the project builds on this: which colors win, whether that survives a control for player skill, how splashing changes things, and finally whether the cards inside the deck matter more than its colors.</p>
+</section>
+<section id="headline-findings" class="level2">
+<h2 class="anchored" data-anchor-id="headline-findings">Headline findings</h2>
+<ul>
+<li><strong>Color matters, modestly.</strong> WU has the highest skill-adjusted win rate at 56.6% and is the best pair in 96% of bootstrap resamples. The gap between the best and worst pair is about 3.9 percentage points.</li>
+<li><strong>Skill adjustment barely changes the color ranking.</strong> Three different skill controls give nearly the same spread across pairs (3.9 to 3.9 points).</li>
+<li><strong>Splashing costs win rate.</strong> After adjusting for skill, splash decks win about 1.8 points less than non-splash decks, and the splash penalty is clearly negative for 6 of 10 pairs.</li>
+<li><strong>Cards add more predictive information than color.</strong> On held-out drafts, adding card identity improves log loss about 7.9 times as much as adding the color pair, once skill is accounted for.</li>
+</ul>
+<p>See <a href="#methods">Methods</a> for how these were estimated, <a href="#results">Results</a> for the full tables and figures, and <a href="#discussion">Discussion</a> for limitations.</p>
+</section>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<section id="data-and-querying" class="level3">
+<h3 class="anchored" data-anchor-id="data-and-querying">Data and querying</h3>
+<p>The raw game file is about 2 GB, so it is converted once to a parquet file and queried with DuckDB. The queries are written with <code>dplyr</code> through <code>dbplyr</code>, which translates the verbs to SQL and only pulls data into R when <code>collect()</code> is called.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>games <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con, <span class="st">"games_keyed"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>pairs_raw <span class="ot">&lt;-</span> games <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">nchar</span>(main_colors) <span class="sc">==</span> <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(main_colors) <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">games  =</span> <span class="fu">n</span>(),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">drafts =</span> <span class="fu">n_distinct</span>(draft_id),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">wr     =</span> <span class="fu">mean</span>(<span class="fu">as.integer</span>(won), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(games <span class="sc">&gt;=</span> min_games) <span class="sc">|&gt;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(wr)) <span class="sc">|&gt;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="variables-and-filtering" class="level3">
+<h3 class="anchored" data-anchor-id="variables-and-filtering">Variables and filtering</h3>
+<ul>
+<li><strong>Outcome:</strong> <code>won</code> (1 if the player won the game).</li>
+<li><strong>Deck color:</strong> <code>main_colors</code>, restricted to two-color decks. Every pair had at least 1,000 games.</li>
+<li><strong>Splash:</strong> a deck has a splash if <code>splash_colors</code> is not empty (47% of modeled games).</li>
+<li><strong>Play or draw:</strong> <code>on_play</code>. The win rate is 57.8% on the play and 52.9% on the draw, so it is always a control.</li>
+<li><strong>Skill:</strong> the player’s historical win-rate bucket and games-played bucket. Rank has 7 tiers and is used as a robustness check. Opponent rank has 1 distinct value in this file, so it cannot be used.</li>
+</ul>
+</section>
+<section id="resampling-by-draft" class="level3">
+<h3 class="anchored" data-anchor-id="resampling-by-draft">Resampling by draft</h3>
+<p>Games from the same draft share one deck and one player, so they are not independent. All uncertainty in this project comes from bootstrapping <strong>drafts</strong>, not games: each replicate draws drafts with replacement and recomputes the statistic from the games in those drafts.</p>
+<p>Win rates are first aggregated to one row per draft and color pair. Each replicate is a vector of draft counts drawn from a multinomial distribution, and the resampled win rate is a ratio of weighted sums, so no data frame is rebuilt in the loop.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>counts <span class="ot">&lt;-</span> <span class="fu">rmultinom</span>(b, n_d, <span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> n_d, n_d))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>w      <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(counts, Wm)   <span class="co"># resampled wins per pair</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>g      <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(counts, Gm)   <span class="co"># resampled games per pair</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>boot_wr[rows, ] <span class="ot">&lt;-</span> w <span class="sc">/</span> g</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>With 2,000 replicates, I report 95% percentile intervals and also how often each pair ranks first, which answers directly whether the top pair is stable.</p>
+</section>
+<section id="adjusting-for-player-skill" class="level3">
+<h3 class="anchored" data-anchor-id="adjusting-for-player-skill">Adjusting for player skill</h3>
+<p>A logistic regression estimates the win probability from color pair, splash, on the play, and the two skill indicators. Standard errors are cluster-robust by draft.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>m_adj <span class="ot">&lt;-</span> <span class="fu">glm</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  won <span class="sc">~</span> pair <span class="sc">+</span> has_splash <span class="sc">+</span> on_play <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    user_game_win_rate_bucket <span class="sc">+</span> user_n_games_bucket,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">family =</span> binomial, <span class="at">data =</span> model_df</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(m_adj, <span class="at">vcov =</span> vcovCL, <span class="at">cluster =</span> <span class="sc">~</span>draft_id)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Adjusted win rates for each pair come from standardization: predict every game in the data as if it had been played with that pair, then average. To get intervals, the model is refit on 200 draft resamples, using draft resample counts as case weights.</p>
+<p>Because the win-rate bucket partly reflects the games being analyzed, two alternative controls are compared: experience only (games played) and rank.</p>
+</section>
+<section id="splash" class="level3">
+<h3 class="anchored" data-anchor-id="splash">Splash</h3>
+<p>Win rates by pair and splash color use the same draft bootstrap. For each pair, the splash effect is the win rate with any splash minus the win rate with none, with a bootstrap interval.</p>
+</section>
+<section id="individual-cards" class="level3">
+<h3 class="anchored" data-anchor-id="individual-cards">Individual cards</h3>
+<p>For each card with at least 2,000 games in deck (262 cards, excluding basic lands), two quantities are estimated using the residuals of the skill-adjusted color model (observed win minus predicted win probability):</p>
+<ol type="1">
+<li><strong>In deck vs.&nbsp;expected:</strong> the average residual in decks containing the card.</li>
+<li><strong>Drawn vs.&nbsp;not drawn:</strong> within decks containing the card, the difference in average residual between games where it was seen (opening hand or drawn) and games where it was not.</li>
+</ol>
+<p>Both are bootstrapped by draft with 1,000 replicates. P-values use the bootstrap standard error and a Benjamini-Hochberg correction for testing many cards.</p>
+<p>Because extreme estimates among hundreds of cards are partly luck, the estimates are shrunk toward the average with an empirical Bayes (random effects) model. The true spread of card effects comes from a DerSimonian-Laird estimate, which removes sampling noise from the observed spread.</p>
+</section>
+<section id="color-versus-cards-out-of-sample-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="color-versus-cards-out-of-sample-comparison">Color versus cards: out-of-sample comparison</h3>
+<p>To compare how much color and cards each help predict wins, three models are fit and evaluated on held-out drafts using 5-fold cross-validation, with all games from a draft in the same fold:</p>
+<ol type="1">
+<li>skill and on the play only,</li>
+<li>plus color pair and splash,</li>
+<li>plus an indicator for each card, fit with an elastic-net penalty (<code>glmnet</code>) on the cards only.</li>
+</ol>
+<p>Each step is scored with AUC and log loss. Intervals for the log loss gains come from a draft-level bootstrap of the out-of-fold predictions.</p>
+</section>
+<section id="reproducibility" class="level3">
+<h3 class="anchored" data-anchor-id="reproducibility">Reproducibility</h3>
+<p>All analysis code is in <code>explore.R</code> in the project repository. It runs top to bottom with a fixed random seed (2511), and writes the small result files that these pages read. The raw data are not stored in the repository because of their size.</p>
+</section>
+</section>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<section id="which-color-pair-wins" class="level3">
+<h3 class="anchored" data-anchor-id="which-color-pair-wins">Which color pair wins?</h3>
+<p><a href="#tbl-pairs" class="quarto-xref">Table&nbsp;1</a> shows each pair’s win rate before and after adjusting for player skill, with 95% intervals from resampling drafts. “P(best)” is the share of bootstrap resamples in which that pair had the highest win rate.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pair_tbl <span class="ot">&lt;-</span> final_compare <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(pairs_raw <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">pair =</span> main_colors), <span class="at">by =</span> <span class="st">"pair"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Pair =</span> pair,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Games =</span> <span class="fu">big</span>(games),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Raw win rate (95% CI)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">ci_str</span>(raw_wr, raw_lo, raw_hi),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Adjusted win rate (95% CI)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">ci_str</span>(adj_wr, adj_lo, adj_hi),</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">P(best), raw</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">pct</span>(raw_p_best, <span class="dv">0</span>),</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">P(best), adjusted</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">pct</span>(adj_p_best, <span class="dv">0</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(pair_tbl, <span class="at">align =</span> <span class="st">"lrrrrr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-pairs" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Win rate by color pair, raw and skill-adjusted
+</figcaption>
+<div aria-describedby="tbl-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 23%">
+<col style="width: 29%">
+<col style="width: 14%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Pair</th>
+<th style="text-align: right;">Games</th>
+<th style="text-align: right;">Raw win rate (95% CI)</th>
+<th style="text-align: right;">Adjusted win rate (95% CI)</th>
+<th style="text-align: right;">P(best), raw</th>
+<th style="text-align: right;">P(best), adjusted</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">WU</td>
+<td style="text-align: right;">53,349</td>
+<td style="text-align: right;">57.0% (56.6%, 57.4%)</td>
+<td style="text-align: right;">56.6% (56.4%, 57.1%)</td>
+<td style="text-align: right;">100%</td>
+<td style="text-align: right;">96%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RG</td>
+<td style="text-align: right;">39,277</td>
+<td style="text-align: right;">55.7% (55.2%, 56.2%)</td>
+<td style="text-align: right;">56.1% (55.8%, 56.6%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">4%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WG</td>
+<td style="text-align: right;">36,019</td>
+<td style="text-align: right;">54.3% (53.8%, 54.8%)</td>
+<td style="text-align: right;">55.5% (55.2%, 56.0%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UB</td>
+<td style="text-align: right;">61,335</td>
+<td style="text-align: right;">56.1% (55.7%, 56.5%)</td>
+<td style="text-align: right;">55.4% (55.1%, 55.9%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UR</td>
+<td style="text-align: right;">34,352</td>
+<td style="text-align: right;">55.6% (55.1%, 56.1%)</td>
+<td style="text-align: right;">55.3% (54.9%, 55.9%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BR</td>
+<td style="text-align: right;">27,147</td>
+<td style="text-align: right;">54.5% (53.9%, 55.1%)</td>
+<td style="text-align: right;">55.0% (54.6%, 55.7%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BG</td>
+<td style="text-align: right;">27,664</td>
+<td style="text-align: right;">55.3% (54.7%, 55.9%)</td>
+<td style="text-align: right;">55.0% (54.5%, 55.6%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WR</td>
+<td style="text-align: right;">15,505</td>
+<td style="text-align: right;">54.0% (53.2%, 54.7%)</td>
+<td style="text-align: right;">54.5% (53.8%, 55.3%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WB</td>
+<td style="text-align: right;">15,667</td>
+<td style="text-align: right;">53.8% (53.1%, 54.6%)</td>
+<td style="text-align: right;">54.0% (53.5%, 54.6%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UG</td>
+<td style="text-align: right;">17,218</td>
+<td style="text-align: right;">52.9% (52.0%, 53.6%)</td>
+<td style="text-align: right;">52.8% (52.2%, 53.5%)</td>
+<td style="text-align: right;">0%</td>
+<td style="text-align: right;">0%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>WU is the top pair after adjustment, at 56.6% (95% interval 56.4% to 57.1%). Before adjustment the top pair was WU, best in 100% of resamples.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>final_compare <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(pair, raw_wr, raw_lo, raw_hi, adj_wr, adj_lo, adj_hi) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>pair, <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">"type"</span>, <span class="st">".value"</span>), <span class="at">names_sep =</span> <span class="st">"_"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="fu">recode</span>(type, <span class="at">raw =</span> <span class="st">"Raw"</span>, <span class="at">adj =</span> <span class="st">"Skill-adjusted"</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">pair =</span> <span class="fu">reorder</span>(pair, wr)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> wr, <span class="at">y =</span> pair, <span class="at">color =</span> type)) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_pointrange</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> lo, <span class="at">xmax =</span> hi), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> facts<span class="sc">$</span>overall_wr, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Win rate"</span>, <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">color =</span> <span class="cn">NULL</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-pairs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="final_project_files/figure-html/fig-pairs-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Win rate by color pair with 95% bootstrap intervals (resampled by draft). The dashed line is the overall win rate.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="does-skill-explain-the-color-differences" class="level3">
+<h3 class="anchored" data-anchor-id="does-skill-explain-the-color-differences">Does skill explain the color differences?</h3>
+<p>The best-to-worst spread across pairs is 4.1 points raw and 3.9 points after adjustment, so most of the difference between pairs is not a skill artifact. <a href="#tbl-skill" class="quarto-xref">Table&nbsp;2</a> compares the pair win rates under alternative skill controls. The win-rate bucket may partly reflect the games being studied, so the experience-only and rank controls act as checks.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>skill_tbl <span class="ot">&lt;-</span> rank_compare <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Pair =</span> pair,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Raw =</span> <span class="fu">pct</span>(raw_wr),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Experience only</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">pct</span>(adj_exp),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Win-rate bucket</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">pct</span>(adj_bucket),</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Rank =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(adj_rank), <span class="st">"n/a"</span>, <span class="fu">pct</span>(adj_rank))</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(skill_tbl, <span class="at">align =</span> <span class="st">"lrrrr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-skill" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-skill-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Pair win rates under different skill controls
+</figcaption>
+<div aria-describedby="tbl-skill-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Pair</th>
+<th style="text-align: right;">Raw</th>
+<th style="text-align: right;">Experience only</th>
+<th style="text-align: right;">Win-rate bucket</th>
+<th style="text-align: right;">Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">WU</td>
+<td style="text-align: right;">57.0%</td>
+<td style="text-align: right;">57.0%</td>
+<td style="text-align: right;">56.6%</td>
+<td style="text-align: right;">57.0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RG</td>
+<td style="text-align: right;">55.7%</td>
+<td style="text-align: right;">55.6%</td>
+<td style="text-align: right;">56.1%</td>
+<td style="text-align: right;">55.6%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WG</td>
+<td style="text-align: right;">54.3%</td>
+<td style="text-align: right;">54.3%</td>
+<td style="text-align: right;">55.5%</td>
+<td style="text-align: right;">54.2%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UB</td>
+<td style="text-align: right;">56.1%</td>
+<td style="text-align: right;">56.2%</td>
+<td style="text-align: right;">55.4%</td>
+<td style="text-align: right;">56.3%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UR</td>
+<td style="text-align: right;">55.6%</td>
+<td style="text-align: right;">55.6%</td>
+<td style="text-align: right;">55.3%</td>
+<td style="text-align: right;">55.6%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BR</td>
+<td style="text-align: right;">54.5%</td>
+<td style="text-align: right;">54.3%</td>
+<td style="text-align: right;">55.0%</td>
+<td style="text-align: right;">54.3%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BG</td>
+<td style="text-align: right;">55.3%</td>
+<td style="text-align: right;">55.4%</td>
+<td style="text-align: right;">55.0%</td>
+<td style="text-align: right;">55.4%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WR</td>
+<td style="text-align: right;">54.0%</td>
+<td style="text-align: right;">53.9%</td>
+<td style="text-align: right;">54.5%</td>
+<td style="text-align: right;">53.8%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WB</td>
+<td style="text-align: right;">53.8%</td>
+<td style="text-align: right;">53.7%</td>
+<td style="text-align: right;">54.0%</td>
+<td style="text-align: right;">53.7%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UG</td>
+<td style="text-align: right;">52.9%</td>
+<td style="text-align: right;">53.1%</td>
+<td style="text-align: right;">52.8%</td>
+<td style="text-align: right;">53.1%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The spread is 3.9 points with experience only, 3.9 with the win-rate bucket, and 3.9 points with rank, so the conclusion does not depend on the skill proxy.</p>
+</section>
+<section id="splash-colors" class="level3">
+<h3 class="anchored" data-anchor-id="splash-colors">Splash colors</h3>
+<p>After adjusting for skill and play/draw, having a splash changes the log-odds of winning by -0.073 (robust SE 0.007), roughly -1.8 pts.</p>
+<p><a href="#fig-splash" class="quarto-xref">Figure&nbsp;3</a> shows splash minus no-splash win rate for each pair. The effect is clearly negative for 6 of 10 pairs and clearly positive for 2.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>splash_diff <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pair =</span> <span class="fu">reorder</span>(pair, diff)) <span class="sc">|&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> diff, <span class="at">y =</span> pair)) <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_pointrange</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> lo, <span class="at">xmax =</span> hi)) <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(<span class="dv">100</span> <span class="sc">*</span> x)) <span class="sc">+</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Splash minus no splash (percentage points)"</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-splash" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-splash-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="final_project_files/figure-html/fig-splash-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-splash-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Win rate with a splash minus win rate without, by color pair (95% bootstrap interval)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#tbl-splash" class="quarto-xref">Table&nbsp;3</a> lists the highest-win-rate pair and splash combinations. These cells are small and are the best of many, so their intervals are wide and the top entries are likely overstated.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>splash_detail <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Pair + splash</span><span class="st">`</span> <span class="ot">=</span> cell,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Games =</span> <span class="fu">big</span>(games),</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Win rate (95% CI)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">ci_str</span>(wr, lo, hi)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align =</span> <span class="st">"lrr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-splash" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-splash-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Top pair and splash combinations (cells with at least 300 games)
+</figcaption>
+<div aria-describedby="tbl-splash-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Pair + splash</th>
+<th style="text-align: right;">Games</th>
+<th style="text-align: right;">Win rate (95% CI)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">WU + BG</td>
+<td style="text-align: right;">1,362</td>
+<td style="text-align: right;">58.5% (55.9%, 61.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WU + none</td>
+<td style="text-align: right;">27,739</td>
+<td style="text-align: right;">57.9% (57.3%, 58.5%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UB + G</td>
+<td style="text-align: right;">14,032</td>
+<td style="text-align: right;">57.4% (56.6%, 58.2%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BG + U</td>
+<td style="text-align: right;">6,330</td>
+<td style="text-align: right;">57.2% (56.0%, 58.4%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WB + UG</td>
+<td style="text-align: right;">476</td>
+<td style="text-align: right;">56.9% (52.2%, 61.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WU + B</td>
+<td style="text-align: right;">12,646</td>
+<td style="text-align: right;">56.6% (55.7%, 57.5%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UR + none</td>
+<td style="text-align: right;">18,773</td>
+<td style="text-align: right;">56.6% (55.9%, 57.3%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UB + WR</td>
+<td style="text-align: right;">671</td>
+<td style="text-align: right;">56.5% (53.1%, 59.7%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RG + none</td>
+<td style="text-align: right;">22,822</td>
+<td style="text-align: right;">56.3% (55.7%, 57.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BR + UG</td>
+<td style="text-align: right;">470</td>
+<td style="text-align: right;">56.2% (51.6%, 60.8%)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="card-effects" class="level3">
+<h3 class="anchored" data-anchor-id="card-effects">Card effects</h3>
+<p>262 cards had enough games to analyze. Each card’s effect is its win rate relative to what the skill-adjusted color model predicts. 125 cards have a significant in-deck effect after a Benjamini-Hochberg correction, and 134 still have a shrunken 95% interval that excludes zero.</p>
+<p>After removing sampling noise, the true spread of card effects (standard deviation) is 0.87 points, compared with 1.08 points across color pairs.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>card_results <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Card =</span> card,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Games =</span> <span class="fu">big</span>(deck_games),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Raw</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">pp</span>(deck_excess),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Shrunken (95% interval)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sprintf</span>(<span class="st">"%s (%s, %s)"</span>, <span class="fu">pp</span>(deck_shrunk), <span class="fu">pp</span>(deck_shrunk_lo), <span class="fu">pp</span>(deck_shrunk_hi)),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">BH q</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">formatC</span>(deck_q, <span class="at">format =</span> <span class="st">"g"</span>, <span class="at">digits =</span> <span class="dv">2</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align =</span> <span class="st">"lrrrr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-cards-top" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cards-top-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: Cards with the largest positive effect (shrunken estimates, percentage points above expected)
+</figcaption>
+<div aria-describedby="tbl-cards-top-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 9%">
+<col style="width: 6%">
+<col style="width: 33%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Card</th>
+<th style="text-align: right;">Games</th>
+<th style="text-align: right;">Raw</th>
+<th style="text-align: right;">Shrunken (95% interval)</th>
+<th style="text-align: right;">BH q</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Ajani Unrelenting</td>
+<td style="text-align: right;">9,793</td>
+<td style="text-align: right;">+7.2</td>
+<td style="text-align: right;">+5.7 (+5.0, +6.5)</td>
+<td style="text-align: right;">1.6e-58</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">The Theorist, Jace Beleren</td>
+<td style="text-align: right;">9,326</td>
+<td style="text-align: right;">+4.6</td>
+<td style="text-align: right;">+3.7 (+2.9, +4.4)</td>
+<td style="text-align: right;">9.7e-24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Uldaros Theorix</td>
+<td style="text-align: right;">9,080</td>
+<td style="text-align: right;">+4.5</td>
+<td style="text-align: right;">+3.5 (+2.7, +4.3)</td>
+<td style="text-align: right;">2.2e-20</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Garruk, Curse Breaker</td>
+<td style="text-align: right;">8,080</td>
+<td style="text-align: right;">+4.0</td>
+<td style="text-align: right;">+3.1 (+2.2, +3.9)</td>
+<td style="text-align: right;">2.1e-15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sphinx of False Conclusions</td>
+<td style="text-align: right;">19,662</td>
+<td style="text-align: right;">+3.5</td>
+<td style="text-align: right;">+3.0 (+2.4, +3.6)</td>
+<td style="text-align: right;">1.5e-24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Garruk, Veiled Butcher</td>
+<td style="text-align: right;">9,225</td>
+<td style="text-align: right;">+3.1</td>
+<td style="text-align: right;">+2.4 (+1.6, +3.2)</td>
+<td style="text-align: right;">4.2e-10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lich’s Relic</td>
+<td style="text-align: right;">19,148</td>
+<td style="text-align: right;">+2.7</td>
+<td style="text-align: right;">+2.4 (+1.8, +3.0)</td>
+<td style="text-align: right;">2.1e-15</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Overwrite the Multiverse</td>
+<td style="text-align: right;">8,892</td>
+<td style="text-align: right;">+3.1</td>
+<td style="text-align: right;">+2.4 (+1.5, +3.2)</td>
+<td style="text-align: right;">2.7e-09</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sublime Epiphany</td>
+<td style="text-align: right;">2,257</td>
+<td style="text-align: right;">+4.8</td>
+<td style="text-align: right;">+2.4 (+1.2, +3.6)</td>
+<td style="text-align: right;">6.7e-07</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Vraska, the Cutting Glare</td>
+<td style="text-align: right;">13,869</td>
+<td style="text-align: right;">+2.4</td>
+<td style="text-align: right;">+2.0 (+1.3, +2.7)</td>
+<td style="text-align: right;">1.5e-08</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>card_results <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(deck_shrunk) <span class="sc">|&gt;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Card =</span> card,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Games =</span> <span class="fu">big</span>(deck_games),</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Raw</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">pp</span>(deck_excess),</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Shrunken (95% interval)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sprintf</span>(<span class="st">"%s (%s, %s)"</span>, <span class="fu">pp</span>(deck_shrunk), <span class="fu">pp</span>(deck_shrunk_lo), <span class="fu">pp</span>(deck_shrunk_hi)),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">BH q</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">formatC</span>(deck_q, <span class="at">format =</span> <span class="st">"g"</span>, <span class="at">digits =</span> <span class="dv">2</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align =</span> <span class="st">"lrrrr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-cards-bottom" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cards-bottom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: Cards with the largest negative effect (shrunken estimates, percentage points below expected)
+</figcaption>
+<div aria-describedby="tbl-cards-bottom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 33%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Card</th>
+<th style="text-align: right;">Games</th>
+<th style="text-align: right;">Raw</th>
+<th style="text-align: right;">Shrunken (95% interval)</th>
+<th style="text-align: right;">BH q</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Way of the Deathbringer</td>
+<td style="text-align: right;">12,485</td>
+<td style="text-align: right;">-2.9</td>
+<td style="text-align: right;">-2.4 (-3.1, -1.7)</td>
+<td style="text-align: right;">2.2e-12</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Winter, Team Player</td>
+<td style="text-align: right;">8,398</td>
+<td style="text-align: right;">-2.8</td>
+<td style="text-align: right;">-2.1 (-3.0, -1.3)</td>
+<td style="text-align: right;">3.1e-07</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Way of the Necromancer</td>
+<td style="text-align: right;">2,942</td>
+<td style="text-align: right;">-3.9</td>
+<td style="text-align: right;">-2.0 (-3.2, -0.8)</td>
+<td style="text-align: right;">3.4e-05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Academic Ascent</td>
+<td style="text-align: right;">11,475</td>
+<td style="text-align: right;">-2.0</td>
+<td style="text-align: right;">-1.7 (-2.3, -1.0)</td>
+<td style="text-align: right;">2.6e-06</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pia, Aether Ascetic</td>
+<td style="text-align: right;">6,840</td>
+<td style="text-align: right;">-2.3</td>
+<td style="text-align: right;">-1.6 (-2.5, -0.7)</td>
+<td style="text-align: right;">0.00016</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Rampart Hunter</td>
+<td style="text-align: right;">6,137</td>
+<td style="text-align: right;">-2.4</td>
+<td style="text-align: right;">-1.6 (-2.6, -0.7)</td>
+<td style="text-align: right;">0.00026</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Charge the Sanctum</td>
+<td style="text-align: right;">9,979</td>
+<td style="text-align: right;">-2.0</td>
+<td style="text-align: right;">-1.6 (-2.4, -0.8)</td>
+<td style="text-align: right;">3.2e-05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Massacre Girl, Most Wanted</td>
+<td style="text-align: right;">17,175</td>
+<td style="text-align: right;">-1.9</td>
+<td style="text-align: right;">-1.6 (-2.2, -0.9)</td>
+<td style="text-align: right;">2.6e-06</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Blazing Crescendo</td>
+<td style="text-align: right;">13,136</td>
+<td style="text-align: right;">-1.9</td>
+<td style="text-align: right;">-1.6 (-2.3, -0.8)</td>
+<td style="text-align: right;">2e-05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hexhaven Dueling Arena</td>
+<td style="text-align: right;">4,804</td>
+<td style="text-align: right;">-2.3</td>
+<td style="text-align: right;">-1.5 (-2.5, -0.5)</td>
+<td style="text-align: right;">0.0015</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(card_results, deck_shrunk, <span class="at">n =</span> <span class="dv">15</span>),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_min</span>(card_results, deck_shrunk, <span class="at">n =</span> <span class="dv">15</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> deck_shrunk, <span class="at">y =</span> <span class="fu">reorder</span>(card, deck_shrunk))) <span class="sc">+</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_pointrange</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> deck_shrunk_lo, <span class="at">xmax =</span> deck_shrunk_hi)) <span class="sc">+</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(<span class="dv">100</span> <span class="sc">*</span> x)) <span class="sc">+</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Win rate vs expected (percentage points)"</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-cards" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cards-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="final_project_files/figure-html/fig-cards-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cards-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Fifteen highest and lowest cards by shrunken effect, with 95% intervals
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Comparing games where a card was drawn against games where it was in the deck but not drawn gives a larger spread (2.76 points, with 175 cards significant). This measure is biased upward, because longer games draw more cards and game length is related to winning, so it should be read as suggestive.</p>
+</section>
+<section id="color-versus-cards" class="level3">
+<h3 class="anchored" data-anchor-id="color-versus-cards">Color versus cards</h3>
+<p><a href="#tbl-pred" class="quarto-xref">Table&nbsp;6</a> shows how well each model predicts wins on held-out drafts, and <a href="#tbl-gains" class="quarto-xref">Table&nbsp;7</a> shows how much each step improves on the previous one.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pred_compare <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Model =</span> model,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">AUC</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sprintf</span>(<span class="st">"%.4f"</span>, auc),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Log loss</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sprintf</span>(<span class="st">"%.5f"</span>, log_loss)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align =</span> <span class="st">"lrr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-pred" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-pred-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;6: Out-of-sample performance (5-fold cross-validation, grouped by draft)
+</figcaption>
+<div aria-describedby="tbl-pred-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: right;">AUC</th>
+<th style="text-align: right;">Log loss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">skill + on_play</td>
+<td style="text-align: right;">0.5967</td>
+<td style="text-align: right;">0.67147</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">+ color pair and splash</td>
+<td style="text-align: right;">0.5979</td>
+<td style="text-align: right;">0.67114</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">+ card indicators</td>
+<td style="text-align: right;">0.6065</td>
+<td style="text-align: right;">0.66857</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>cv_gains <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Step =</span> step,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">AUC gain</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sprintf</span>(<span class="st">"%+.4f (%+.4f, %+.4f)"</span>, auc_gain, auc_lo, auc_hi),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Log loss gain</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sprintf</span>(<span class="st">"%.5f (%.5f, %.5f)"</span>, logloss_gain, ll_lo, ll_hi)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align =</span> <span class="st">"lrr"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-gains" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-gains-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;7: Improvement from each added step (95% intervals)
+</figcaption>
+<div aria-describedby="tbl-gains-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Step</th>
+<th style="text-align: right;">AUC gain</th>
+<th style="text-align: right;">Log loss gain</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">adding color pair + splash</td>
+<td style="text-align: right;">+0.0012 (+0.0008, +0.0015)</td>
+<td style="text-align: right;">0.00033 (0.00024, 0.00041)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">adding card indicators</td>
+<td style="text-align: right;">+0.0086 (+0.0075, +0.0096)</td>
+<td style="text-align: right;">0.00257 (0.00239, 0.00274)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Adding the color pair improves log loss by 3.3^{-4} and adding cards improves it by 0.0026, about 7.9 times as much. Both gains are clearly above zero, and the card gain is larger than the color gain in 5 of 5 folds (<a href="#fig-folds" class="quarto-xref">Figure&nbsp;5</a>).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>cv_folds <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(fold, auc0, auc1, auc2) <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>fold, <span class="at">names_to =</span> <span class="st">"model"</span>, <span class="at">values_to =</span> <span class="st">"auc"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">recode</span>(model,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">auc0 =</span> <span class="st">"Skill + play/draw"</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">auc1 =</span> <span class="st">"+ color and splash"</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">auc2 =</span> <span class="st">"+ cards"</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> fold, <span class="at">y =</span> auc, <span class="at">color =</span> model)) <span class="sc">+</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Fold"</span>, <span class="at">y =</span> <span class="st">"AUC"</span>, <span class="at">color =</span> <span class="cn">NULL</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-folds" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-folds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="final_project_files/figure-html/fig-folds-1.png" class="img-fluid figure-img" width="624">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-folds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: AUC by fold for each model
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="discussion" class="level2">
+<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
+<section id="what-the-results-say" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-results-say">What the results say</h3>
+<p><strong>Color pair.</strong> WU has the highest win rate, and the ranking holds up: it stays on top after adjusting for skill and is the best pair in 96% of draft resamples. Still, the gap between the best and worst pair is only about 3.9 percentage points. Skill adjustment barely changes that gap, and the result is the same whether skill is measured by experience, win-rate bucket, or rank, so the color differences are not just stronger players favoring certain colors.</p>
+<p><strong>Splash.</strong> Splashing a third color is associated with a lower win rate after adjusting for skill, about 1.8 points on average. The raw gap was smaller than the adjusted gap, which suggests stronger players splash more often and the raw comparison understates the cost. The effect is not identical across pairs, and some pair and splash combinations have too few games to say much.</p>
+<p><strong>Cards.</strong> Card identity carries more predictive information than color pair. Once skill and play/draw are known, adding the color pair improves held-out prediction slightly, and adding cards improves it about 7.9 times as much. The typical card’s true effect (standard deviation about 0.9 points) is similar in size to the differences between color pairs, and there are hundreds of cards. So winning in this format depends more on which cards a deck contains than on which two colors it plays.</p>
+<p><strong>Scale.</strong> Even the best predictive model here separates winners from losers only a little better than a coin flip (AUC about 0.606). Player skill and being on the play (57.8% vs.&nbsp;52.9% on the draw) matter at least as much as deck construction, and most of a single game’s result is luck.</p>
+</section>
+<section id="limitations" class="level3">
+<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
+<ul>
+<li><strong>Observational data.</strong> Everything here is an association. Players choose their colors, splashes, and cards, and those choices are related to skill and to each other.</li>
+<li><strong>Skill is measured imperfectly.</strong> The win-rate bucket may partly reflect the games being analyzed, and opponent rank had no variation in this file. Results that agree across several controls are reassuring, but they do not rule out unmeasured skill differences.</li>
+<li><strong>Self-selected players.</strong> 17Lands users are not a random sample of Arena players, so results describe this group.</li>
+<li><strong>Card effects mix card power and context.</strong> Within a color pair, a card’s effect also reflects the archetype it belongs to, how often it is a bomb, and who plays it. The drawn-versus-not-drawn comparison is also biased by game length.</li>
+<li><strong>Many comparisons.</strong> With 262 cards, some extreme estimates are partly luck. Shrinkage and the false discovery correction reduce this but do not remove it.</li>
+<li><strong>Approximate intervals.</strong> The AUC intervals come from only five folds, and the log loss intervals treat the out-of-fold predictions as fixed, so both ignore some model refitting variation.</li>
+<li><strong>One set.</strong> The patterns may not hold for other sets, which have different cards and archetypes.</li>
+</ul>
+</section>
+<section id="possible-extensions" class="level3">
+<h3 class="anchored" data-anchor-id="possible-extensions">Possible extensions</h3>
+<ul>
+<li>Add opponent colors to study matchups between color pairs.</li>
+<li>Fit card effects within each color pair to see whether a card is strong everywhere or only in one archetype.</li>
+<li>Use the pick-level draft data to study how early picks relate to final deck strength.</li>
+<li>Repeat the analysis on another set to see which findings replicate.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/profic93\.github\.io\/Statistical-Computing\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
